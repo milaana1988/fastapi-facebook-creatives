@@ -9,6 +9,7 @@ A FastAPI project that integrates with the Facebook Marketing API to fetch, proc
   - [Local Installation](#local-installation)
   - [Docker Installation](#docker-installation)
 - [Configuration](#configuration)
+- [Alembic Setup](#alembic-setup)
 - [Usage](#usage)
 - [Live Demo](#live-demo)
 - [Additional Notes](#additional-notes)
@@ -48,7 +49,33 @@ A FastAPI project that integrates with the Facebook Marketing API to fetch, proc
 
     Create a .env file in the root directory (see #configuration below).
 
-5. **Run the FastAPI app:**
+5. **Initialize Alembic:**
+
+    If you haven’t already, initialize Alembic by running:
+
+    ```bash
+    alembic init alembic
+
+    This will create an alembic.ini file and an alembic/ folder containing migration scripts.
+
+6. **Update alembic.ini:**
+
+    Open alembic.ini and replace the hardcoded database URL with a placeholder that reads from an environment variable. For example:
+
+    ```ini
+    sqlalchemy.url = %(DATABASE_URL)s
+
+    Then, in your alembic/env.py, load the environment variables (e.g., using python-dotenv) and override the URL with the value of DATABASE_URL:
+
+    ```python
+    import os
+    from dotenv import load_dotenv
+
+    load_dotenv()  
+
+    config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
+
+7. **Run the FastAPI app:**
 
     ```bash
     uvicorn app.main:app --reload
@@ -66,6 +93,29 @@ The application will be available at http://localhost:8000
     CLIENT_SECRET=your_facebook_app_secret
     FB_API_URL=https://graph.facebook.com
     DB_URL=mssql+pytds://admin:your_db_password@database-1.your-region.rds.amazonaws.com:1433/your_db_name
+
+## Alembic Setup
+    After running alembic init alembic, update your Alembic configuration to securely manage your database credentials:
+
+  - **alembic.ini:**
+    Replace the hardcoded URL with a placeholder:
+
+    ```ini
+    sqlalchemy.url = %(DATABASE_URL)s
+
+  - **alembic/env.py:**
+    Add the following lines at the top to load environment variables:
+
+    ```python
+    import os
+    from dotenv import load_dotenv
+
+    load_dotenv()  # Load variables from .env
+
+    # Then set the SQLAlchemy URL to the one from your environment
+    config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
+
+    This setup ensures that your database credentials are loaded from the environment and not hardcoded in version-controlled files.
 
 ## Usage
     Once the application is running, you can use the following endpoints:
